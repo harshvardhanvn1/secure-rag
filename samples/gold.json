@@ -1,0 +1,13 @@
+[
+    {
+      "query": "revenue",
+      "gold_doc_ids": ["<PUT-DOC-ID-FOR-GOOGLE-10K>"],
+      "top_k": 3
+    },
+    {
+      "query": "cloud revenue",
+      "gold_doc_ids": ["<PUT-DOC-ID-FOR-MICROSOFT-10K>"],
+      "top_k": 3
+    }
+  ]
+  
