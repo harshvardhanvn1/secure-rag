@@ -10,3 +10,6 @@
 
 # extra accidental dirs
 secure-rag/
+
+# datasets
+/data/
