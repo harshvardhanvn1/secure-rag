@@ -1,3 +1,5 @@
+# api/main.py
+
 import os
 from typing import List, Optional, Tuple
 from fastapi import FastAPI, HTTPException, Depends, Header
@@ -11,7 +13,8 @@ from apps.db import (
     delete_document_chunks,
     insert_chunks,
     insert_embeddings,
-    grant_owner
+    grant_owner,
+    insert_retrieval_trace  # ensure this is imported
 )
 from apps.embeddings import embed_texts, EMBEDDING_MODEL, EMBEDDING_DIM
 from ingest.pii import redact_text
@@ -53,9 +56,10 @@ class SearchHit(BaseModel):
 
 class SearchResponse(BaseModel):
     hits: List[SearchHit]
+    trace_id: Optional[int] = None   # optional trace id
 
 
-app = FastAPI(title="Secure-RAG API (minimal)")
+app = FastAPI(title="Secure-RAG API (with trace logging + ACL)")
 
 
 @app.get("/healthz")
@@ -77,10 +81,10 @@ def ingest(
 
     user_id, user_email = current
 
-    # Open DB connection
     with get_conn() as conn:
-        # idempotent document
-        doc_id, is_new = create_or_get_document(conn, owner_user_id=user_id, title=req.title, source_key=req.source_key or f"adhoc/{req.title.lower().replace(' ', '-')}")
+        # idempotent creation or reuse
+        source_key = req.source_key or f"adhoc/{req.title.lower().replace(' ', '-')}"
+        doc_id, is_new = create_or_get_document(conn, owner_user_id=user_id, title=req.title, source_key=source_key)
         if not is_new:
             delete_document_chunks(conn, doc_id)
 
@@ -89,12 +93,12 @@ def ingest(
         chunks = [req.text[i : i + CHUNK_SIZE] for i in range(0, len(req.text), CHUNK_SIZE)]
         redacted = [redact_text(c) for c in chunks]
 
-        # insert & embed
+        # insert chunks & embeddings
         chunk_ids = insert_chunks(conn, doc_id, redacted)
         vecs = embed_texts(redacted)
         insert_embeddings(conn, chunk_ids=chunk_ids, vectors=vecs, model_name=EMBEDDING_MODEL)
 
-        # grant ACL
+        # grant owner
         grant_owner(conn, doc_id, user_id)
 
         conn.commit()
@@ -120,7 +124,7 @@ def search(
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(f"""
-                SELECT c.chunk_id, d.title, c.redacted_text, 
+                SELECT c.chunk_id, d.title, c.redacted_text,
                        (ce.embedding <-> %s::vector({EMBEDDING_DIM})) AS score
                 FROM chunk_embedding ce
                 JOIN chunk c ON c.chunk_id = ce.chunk_id
@@ -133,15 +137,23 @@ def search(
             """, (qvec, EMBEDDING_MODEL, user_id, qvec, req.top_k))
             rows = cur.fetchall()
 
-    hits = []
+    # prepare hits for response and for trace
+    resp_hits: List[SearchHit] = []
+    trace_hits: List[Tuple[UUID, float]] = []  # (chunk_id, score)
     for i, (chunk_id, title, text, score) in enumerate(rows, start=1):
         snippet = (text[:320] + "…") if len(text) > 320 else text
-        hits.append(SearchHit(
+        resp_hits.append(SearchHit(
             rank=i,
             chunk_id=chunk_id,
             score=float(score),
             title=title,
             snippet=snippet
         ))
+        trace_hits.append((chunk_id, float(score)))
 
-    return SearchResponse(hits=hits)
+    # log trace
+    with get_conn() as trace_conn:
+        trace_id = insert_retrieval_trace(trace_conn, user_id, req.query, req.top_k, trace_hits)
+        trace_conn.commit()
+
+    return SearchResponse(hits=resp_hits, trace_id=trace_id)
