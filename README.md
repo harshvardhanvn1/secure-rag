@@ -9,3 +9,9 @@
 - **Infra**: PostgreSQL + pgvector, FastAPI, Airflow, React, Docker/K8s
 
 ## 🗂 Project Structure
+
+
+### Start database
+```bash
+docker compose up -d
+
