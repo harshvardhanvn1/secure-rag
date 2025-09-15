@@ -104,3 +104,25 @@ def delete_document_chunks(conn, doc_id: int) -> None:
             WHERE chunk_id IN (SELECT chunk_id FROM chunk WHERE doc_id = %s);
         """, (doc_id,))
         cur.execute("DELETE FROM chunk WHERE doc_id = %s;", (doc_id,))
+
+    
+def insert_retrieval_trace(conn, user_id, query_text: str, top_k: int, hits):
+    """
+    hits: list of (chunk_id, score) ordered by rank
+    Returns trace_id
+    """
+    with conn.cursor() as cur:
+        cur.execute("""
+            INSERT INTO retrieval_trace (user_id, query_text, top_k, created_at)
+            VALUES (%s, %s, %s, NOW())
+            RETURNING trace_id;
+        """, (user_id, query_text, top_k))
+        trace_id = cur.fetchone()[0]
+
+        for rank, (cid, score) in enumerate(hits, start=1):
+            cur.execute("""
+                INSERT INTO retrieval_trace_hit (trace_id, rank, chunk_id, score)
+                VALUES (%s, %s, %s, %s);
+            """, (trace_id, rank, cid, score))
+
+    return trace_id
