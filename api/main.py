@@ -2,9 +2,11 @@
 
 import os
 from typing import List, Optional, Tuple
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, UploadFile, File
 from pydantic import BaseModel, Field
 from uuid import UUID
+from pypdf import PdfReader
+import io
 
 from apps.db import (
     get_conn,
@@ -109,6 +111,39 @@ def ingest(
         "status": "replaced" if not is_new else "created"
     }
 
+@app.post("/ingest_file")
+def ingest_file(
+    file: UploadFile = File(...),
+    current: tuple[UUID, str] = Depends(get_current_user)
+):
+    name = file.filename or "upload"
+    fn_lower = name.lower()
+
+    # read bytes once
+    data = file.file.read()
+
+    # figure out text based on extension / content-type
+    content_type = (file.content_type or "").lower()
+    full_text = ""
+
+    if fn_lower.endswith(".pdf") or "pdf" in content_type:
+        reader = PdfReader(io.BytesIO(data))
+        full_text = "\n".join((page.extract_text() or "") for page in reader.pages)
+    elif fn_lower.endswith(".txt") or content_type.startswith("text/"):
+        full_text = data.decode("utf-8", errors="ignore")
+    else:
+        raise HTTPException(400, detail="Only .pdf and .txt supported for now")
+
+    if not full_text.strip():
+        raise HTTPException(400, detail="No text extracted")
+
+    # reuse your existing JSON ingest pipeline
+    req = IngestRequest(
+        title=name,
+        text=full_text,
+        source_key=f"upload/{fn_lower.replace(' ', '-')}"
+    )
+    return ingest(req, current)
 
 @app.post("/search", response_model=SearchResponse)
 def search(
