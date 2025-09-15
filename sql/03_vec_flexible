@@ -1,0 +1,12 @@
+BEGIN;
+-- allow variable-length vectors (needed for 768-dim mpnet)
+ALTER TABLE chunk_embedding
+  ALTER COLUMN embedding TYPE vector;
+
+-- rebuild ANN index for current data
+DROP INDEX IF EXISTS idx_chunk_embedding_vec;
+CREATE INDEX IF NOT EXISTS idx_chunk_embedding_vec
+  ON chunk_embedding
+  USING ivfflat (embedding vector_l2_ops)
+  WITH (lists = 100);
+COMMIT;
