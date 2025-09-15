@@ -2,6 +2,7 @@
 import os
 import psycopg
 import uuid
+from typing import List, Tuple, Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -64,3 +65,42 @@ def insert_embeddings(conn, chunk_ids, vectors, model_name: str):
                 (cid, *vec, model_name)
             )
     conn.commit()
+
+
+def create_or_get_document(conn, owner_user_id: int, title: str, source_key: str) -> Tuple[int, bool]:
+    """
+    Idempotent document creation.
+    Returns (doc_id, is_new)
+    """
+    with conn.cursor() as cur:
+        cur.execute("""
+            INSERT INTO document (owner_user_id, title, source_key, created_at)
+            VALUES (%s, %s, %s, NOW())
+            ON CONFLICT (source_key) DO NOTHING
+            RETURNING doc_id;
+        """, (owner_user_id, title, source_key))
+        row = cur.fetchone()
+        if row:
+            return row[0], True  # created new
+
+        # fetch existing doc_id; keep title fresh if it changed
+        cur.execute("SELECT doc_id, title FROM document WHERE source_key = %s;", (source_key,))
+        fetched = cur.fetchone()
+        if not fetched:
+            raise RuntimeError("create_or_get_document: neither inserted nor found existing row")
+        doc_id, existing_title = fetched
+        if existing_title != title:
+            cur.execute("UPDATE document SET title = %s WHERE doc_id = %s;", (title, doc_id))
+        return doc_id, False  # reused existing
+
+
+def delete_document_chunks(conn, doc_id: int) -> None:
+    """
+    Remove all chunks & embeddings for a given document.
+    """
+    with conn.cursor() as cur:
+        cur.execute("""
+            DELETE FROM chunk_embedding
+            WHERE chunk_id IN (SELECT chunk_id FROM chunk WHERE doc_id = %s);
+        """, (doc_id,))
+        cur.execute("DELETE FROM chunk WHERE doc_id = %s;", (doc_id,))
