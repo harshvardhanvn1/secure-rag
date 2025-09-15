@@ -1,0 +1,2 @@
+All employees must complete training within 30 days of joining.
+Contact HR at hr@example.com for questions.
