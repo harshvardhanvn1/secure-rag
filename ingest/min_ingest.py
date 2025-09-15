@@ -1,5 +1,6 @@
 import os, re, time
 from pathlib import Path
+from typing import List, Optional
 
 from dotenv import load_dotenv
 import psycopg
@@ -10,6 +11,7 @@ from apps.embeddings import embed_texts, EMBEDDING_MODEL, EMBEDDING_DIM
 
 
 load_dotenv()
+
 
 def simple_sent_chunk(text: str, max_len: int = 500):
     """Split into rough sentence chunks of ~max_len chars."""
@@ -48,6 +50,7 @@ def main():
         db.insert_embeddings(conn, chunk_ids, vectors, EMBEDDING_MODEL)
 
     print("Ingestion complete")
+
 
 if __name__ == "__main__":
     main()
