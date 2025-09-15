@@ -1,0 +1,12 @@
+# local env files
+.env
+*.env
+
+# virtual environments
+.venv/
+
+# OS junk
+.DS_Store
+
+# extra accidental dirs
+secure-rag/
