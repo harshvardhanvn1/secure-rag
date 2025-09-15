@@ -3,6 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 import psycopg
+from pii import redact_text
 
 # Load env
 load_dotenv()
@@ -27,11 +28,11 @@ def simple_sent_chunk(text: str, max_len: int = 500):
     # add ord numbers upstream
     return [c.strip() for c in chunks if c.strip()]
 
-def fake_redact(text: str) -> str:
-    """Very basic redaction: emails → [EMAIL], digits that look like phone → [PHONE]."""
-    t = re.sub(r'[\w\.-]+@[\w\.-]+', '[EMAIL]', text)
-    t = re.sub(r'\b(?:\+?\d[\d\-\s]{7,}\d)\b', '[PHONE]', t)
-    return t
+# def fake_redact(text: str) -> str:
+#     """Very basic redaction: emails → [EMAIL], digits that look like phone → [PHONE]."""
+#     t = re.sub(r'[\w\.-]+@[\w\.-]+', '[EMAIL]', text)
+#     t = re.sub(r'\b(?:\+?\d[\d\-\s]{7,}\d)\b', '[PHONE]', t)
+#     return t
 
 def ensure_user(conn, email: str, display_name: str) -> uuid.UUID:
     with conn.cursor() as cur:
@@ -85,7 +86,7 @@ def main():
 
     text = src.read_text(encoding="utf-8")
     chunks = simple_sent_chunk(text)
-    redacted = [fake_redact(c) for c in chunks]
+    redacted = [redact_text(c) for c in chunks]
 
     print(f"Read {len(chunks)} chunks; after redaction: {len(redacted)}")
 
