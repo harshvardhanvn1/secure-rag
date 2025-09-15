@@ -1,0 +1,17 @@
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.sqlite
+.env
+data/
+downloads/
+node_modules/
+.cache/
+.huggingface/
+hub/
+venv/
+dist/
+build/

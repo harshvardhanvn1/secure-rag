@@ -5,13 +5,34 @@ services:
     image: pgvector/pgvector:pg16
     container_name: securerag-db
     environment:
+      POSTGRES_DB: securerag
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: securerag
     ports:
       - "5433:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+      - ./db_schema/init:/docker-entrypoint-initdb.d:ro   # ← add this line
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d securerag"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+
+  api:
+    build: .
+    container_name: securerag-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_DSN: postgresql://postgres:postgres@db:5432/securerag
+    ports:
+      - "8000:8000"
+    # Optional: live-reload with your local code (dev only)
+    # volumes:
+    #   - .:/app
 
 volumes:
-  db_data:
+  pgdata:
