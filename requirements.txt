@@ -7,3 +7,6 @@ sentence-transformers==3.0.1
 
 requests==2.32.3
 beautifulsoup4==4.12.3
+fastapi
+uvicorn
+pydantic
