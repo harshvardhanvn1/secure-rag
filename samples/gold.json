@@ -1,0 +1,8 @@
+[
+    {
+      "query": "email",
+      "gold_chunks": ["c8677ccd-6016-40f1-9d73-b093edbed342"],
+      "top_k": 3
+    }
+  ]
+  

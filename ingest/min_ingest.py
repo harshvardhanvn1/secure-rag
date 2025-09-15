@@ -1,11 +1,17 @@
-import os, re, time
+import os, sys
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+import re, time
 from pathlib import Path
 from typing import List, Optional
 
 from dotenv import load_dotenv
 import psycopg
 
-from pii import redact_text
+from ingest.pii import redact_text
+
 from apps import db
 from apps.embeddings import embed_texts, EMBEDDING_MODEL, EMBEDDING_DIM
 
