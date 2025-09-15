@@ -1,3 +1,7 @@
+import warnings
+from urllib3.exceptions import NotOpenSSLWarning
+warnings.filterwarnings("ignore", category=NotOpenSSLWarning)
+
 # ingest/pii.py
 from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern, RecognizerResult
 from presidio_analyzer.nlp_engine import NlpEngineProvider
