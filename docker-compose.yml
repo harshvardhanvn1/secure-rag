@@ -1,38 +1,52 @@
-version: "3.9"
-
 services:
   db:
     image: pgvector/pgvector:pg16
     container_name: securerag-db
     environment:
-      POSTGRES_DB: securerag
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: securerag
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./db_schema/init:/docker-entrypoint-initdb.d:ro   # ← add this line
+      - db_data:/var/lib/postgresql/data
+      - ./db_schema/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d securerag"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-
-  api:
-    build: .
+  securerag-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: securerag-api
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
       POSTGRES_DSN: postgresql://postgres:postgres@db:5432/securerag
     ports:
       - "8000:8000"
-    # Optional: live-reload with your local code (dev only)
-    # volumes:
-    #   - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  securerag-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: securerag-web
+    ports:
+      - "3000:3000"
+    depends_on:
+      securerag-api:
+        condition: service_healthy
 
 volumes:
-  pgdata:
+  db_data:

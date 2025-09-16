@@ -1,0 +1,75 @@
+[
+  {
+    "query": "what is non controlling interest on balance sheet",
+    "gold_doc_ids": [
+      "692498b1-44c4-429f-8486-9dde8bab2325",
+      "828c522f-4a33-4e24-97c5-99cab8318864"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "how many episodes are in chicago fire season 4",
+    "gold_doc_ids": [
+      "458b53c5-124f-44b2-925f-71419c1f1bec"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "who sings love will keep us alive by the eagles",
+    "gold_doc_ids": [
+      "5e9089c1-c8a4-47a8-b990-24c478c06aac"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "who is the leader of the ontario pc party",
+    "gold_doc_ids": [
+      "e5d84573-1fb3-46e9-a96d-e10d3db74590",
+      "854167fc-6143-469c-93f8-cbf3e152ca2d"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "nitty gritty dirt band fishin in the dark album",
+    "gold_doc_ids": [
+      "4c0d5430-448a-4409-a2d1-789104e8a52e"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "who were the three elves who got rings",
+    "gold_doc_ids": [
+      "06d798a9-ef63-408f-976b-dcd7de236153"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "converting stereo signal to mono signal is called",
+    "gold_doc_ids": [
+      "947ba40f-9280-44ea-b505-d7c09eebb252",
+      "86b4d220-b5ee-4b6d-8c49-f9367891b030"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "in order to prove disparate impact you first must establish",
+    "gold_doc_ids": [
+      "d1252cb5-87aa-4309-9c8c-723c7d20069c"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "where do characters live in this is us",
+    "gold_doc_ids": [
+      "79e877d6-b473-45b6-ab68-19c8a28db6a0"
+    ],
+    "top_k": 5
+  },
+  {
+    "query": "who makes the decisions about what to produce in a market economy",
+    "gold_doc_ids": [
+      "e4a828a7-49aa-45be-ac2d-faf0637d1a93"
+    ],
+    "top_k": 5
+  }
+]
