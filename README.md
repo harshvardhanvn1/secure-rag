@@ -61,7 +61,7 @@ Upload PDF →│  Ingest   │──┐
 
 ### 1. Clone repo & install dependencies
 ```bash
-git clone <your_repo>
+gh repo clone harshvardhanvn1/secure-rag
 cd Secure-RAG
 ```
 
