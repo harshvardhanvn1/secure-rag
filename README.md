@@ -1,5 +1,5 @@
 # Secure-RAG  
-**Chat with private PDFs — with PII redaction, per-doc ACL, retrieval traces, and evaluation leaderboard.**
+**Chat with private PDFs - with PII redaction, per-doc ACL, retrieval traces, and evaluation leaderboard.**
 
 ---
 
