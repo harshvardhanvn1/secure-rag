@@ -29,33 +29,8 @@ This system integrates modern, open-source technologies carefully selected for t
 
 ## Architecture
 
-```
-            ┌───────────┐
-Upload PDF →│  Ingest   │──┐
-            └───────────┘  │
-                │           │
-                ▼           │
-         [Presidio Redaction]
-                │
-                ▼
-     [Embeddings via SBERT] 
-                │
-                ▼
-    Store in Postgres + pgvector
-                │
-────────────────┼─────────────────
-                │
-                ▼
-          User Search Query
-                │
-                ▼
-   ANN Search (ACL-filtered hits)
-                │
-                ▼
-    Return hits + log in retrieval_trace
-```
+<img width="1024" height="1024" alt="Flow Diagram" src="https://github.com/user-attachments/assets/d60202f2-373c-49d5-bafc-2a7608e897da" />
 
----
 
 ## Setup & Run
 
