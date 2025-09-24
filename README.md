@@ -29,7 +29,7 @@ This system integrates modern, open-source technologies carefully selected for t
 
 ## Architecture
 
-<img width="1024" height="1024" alt="Flow Diagram" src="https://github.com/user-attachments/assets/d60202f2-373c-49d5-bafc-2a7608e897da" />
+<img width="1024" height="1024" alt="Flow Diagram" src="https://github.com/user-attachments/assets/d01f324a-9859-45c2-b295-0b630070f98e" />
 
 
 ## Setup & Run
